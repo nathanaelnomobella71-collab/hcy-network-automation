@@ -1,9 +1,14 @@
-name: CI
+name: CI/CD Pipeline
 
-on: [push, pull_request]
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
 
 jobs:
   test:
+    name: Intégration Continue (CI)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -24,5 +29,30 @@ jobs:
       - name: Tests unitaires + couverture
         run: pytest --cov=core --cov=strategies --cov-report=term
 
-      - name: Build image Docker
+      - name: Build image Docker locale
         run: docker build -t hcy-engine:${{ github.sha }} .
+
+  deploy:
+    name: Déploiement Continu (CD)
+    needs: test
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Connexion au registre GitHub Packages (GHCR)
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build et Push de l'image Docker vers GHCR
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}/hcy-engine:latest
+            ghcr.io/${{ github.repository }}/hcy-engine:${{ github.sha }}

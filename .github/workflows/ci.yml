@@ -14,7 +14,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
       - name: Lint (flake8)
-        run: flake8 core/ strategies/ observers/ repositories/ api/
+    run: flake8 --max-line-length=120 core/ strategies/ observers/ repositories/ api/
       - name: Tests unitaires + couverture
         run: pytest --cov=core --cov=strategies --cov-report=term
       - name: Build image Docker

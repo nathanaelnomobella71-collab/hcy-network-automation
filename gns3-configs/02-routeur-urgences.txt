@@ -1,0 +1,27 @@
+enable
+configure terminal
+hostname routeur-urgences
+!
+interface GigabitEthernet0/0
+ description Vers sw-core (backbone partage)
+ ip address 10.10.0.2 255.255.255.0
+ no shutdown
+!
+interface GigabitEthernet0/1
+ description LAN du departement (vers switch d acces)
+ ip address 192.168.20.1 255.255.255.0
+ no shutdown
+!
+ip route 0.0.0.0 0.0.0.0 10.10.0.1
+!
+line vty 0 4
+ login local
+ transport input ssh
+!
+username admin privilege 15 secret VOTRE_MOT_DE_PASSE
+enable secret VOTRE_MOT_DE_PASSE
+ip ssh version 2
+crypto key generate rsa modulus 1024
+!
+end
+write memory

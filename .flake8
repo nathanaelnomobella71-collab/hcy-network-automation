@@ -1,0 +1,6 @@
+[flake8]
+# Seuil de 99 caractères (plutôt que la valeur historique 79) : choix
+# documenté, cohérent avec la largeur de ligne de Black (88) et courant
+# dans les projets Python modernes ; ne relâche pas les autres règles.
+max-line-length = 99
+exclude = venv,.venv,__pycache__

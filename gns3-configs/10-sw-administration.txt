@@ -1,0 +1,30 @@
+enable
+configure terminal
+hostname sw-administration
+!
+interface Vlan1
+ ip address 192.168.30.7 255.255.255.0
+ no shutdown
+!
+! Fa0/0 = liaison montante (routeur ou switch precedent de la chaine)
+! Fa0/1 = port surveille - securite MAC (RF-02, scenario intrusion)
+interface FastEthernet0/1
+ description Port surveille - securite MAC
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 1
+ switchport port-security violation shutdown
+ switchport port-security mac-address sticky
+!
+! Recoit la chaine depuis sw-pharmacie (Fa0/0)
+line vty 0 4
+ login local
+ transport input ssh
+!
+username admin privilege 15 secret VOTRE_MOT_DE_PASSE
+enable secret VOTRE_MOT_DE_PASSE
+ip ssh version 2
+crypto key generate rsa modulus 1024
+!
+end
+write memory

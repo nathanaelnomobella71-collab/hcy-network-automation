@@ -1,0 +1,28 @@
+Noeud : dpi-server (VPCS — Virtual PC Simulator, palette par défaut de GNS3)
+
+Représente le Dossier Patient Informatisé (DPI) — le système dont la
+continuité est l'enjeu central du mémoire (cf. Introduction générale,
+Chapitre 3, 3.10.4). Un VPCS suffit : il répond au ping (RF-01) sans qu'il
+soit nécessaire de simuler un vrai serveur applicatif.
+
+Câblage : dpi-server ↔ sw-core (n'importe quel port libre).
+
+Configuration (dans la console VPCS du nœud, pas une console IOS) :
+
+    ip 10.10.0.10/24 10.10.0.1
+    save
+
+Test de continuité après un scénario de panne (ex. arrêt de
+routeur-urgences dans GNS3) :
+
+    ping 10.10.0.10
+
+Une réponse continue prouve concrètement que le DPI reste joignable depuis
+le cœur de réseau malgré la panne — c'est la preuve empirique du résultat
+annoncé en 3.10.4, pas seulement une affirmation du mémoire.
+
+Remarque : un VPCS ne répond pas au SSH. Si ce nœud lui-même devient
+injoignable (panne du serveur, pas du réseau), le moteur détecte
+l'incident (LINK_DOWN) mais la remédiation échouera proprement — cohérent
+avec la limite déjà assumée au Chapitre 4 (4.5.2) : le système isole et
+notifie les pannes matérielles, il ne les répare pas.

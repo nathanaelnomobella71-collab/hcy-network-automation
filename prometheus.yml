@@ -1,0 +1,16 @@
+global:
+  scrape_interval: 5s
+  evaluation_interval: 5s
+
+scrape_configs:
+  - job_name: 'hcy_network_engine'
+    static_configs:
+      # 'host.docker.internal' résout vers la machine hôte depuis un
+      # conteneur Docker : c'est là que tourne run_engine.py (processus
+      # hôte, cf. 3.4), pas dans un conteneur. Fonctionne nativement sur
+      # Docker Desktop (Windows/Mac) ; sur Linux natif, le service
+      # prometheus-hcy du docker-compose.yml ajoute explicitement ce mapping
+      # (extra_hosts) pour le même résultat.
+      - targets: ['host.docker.internal:8000']
+        labels:
+          environment: 'hcy_production'

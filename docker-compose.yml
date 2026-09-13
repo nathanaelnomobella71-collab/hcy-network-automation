@@ -1,0 +1,73 @@
+services:
+  postgres-hcy:
+    image: postgres:16-alpine
+    container_name: postgres-hcy
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: hcy_network_db
+      POSTGRES_USER: ${HCY_DB_USER}
+      POSTGRES_PASSWORD: ${HCY_DB_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./sql/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+
+  prometheus-hcy:
+    image: prom/prometheus:v2.53.0
+    container_name: prometheus-hcy
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    extra_hosts:
+      # Rend 'host.docker.internal' résoluble aussi sur Linux natif (déjà
+      # natif sur Docker Desktop Windows/Mac) — nécessaire pour atteindre
+      # run_engine.py, qui tourne en processus hôte (cf. prometheus.yml).
+      - "host.docker.internal:host-gateway"
+
+  grafana-hcy:
+    image: grafana/grafana:10.4.2
+    container_name: grafana-hcy
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${HCY_GRAFANA_ADMIN_PASSWORD}
+      # Accès anonyme en LECTURE SEULE (rôle Viewer) : permet d'intégrer les
+      # panneaux dans le portail Streamlit (iframe, cf. ui/streamlit_app.py)
+      # sans exposer les identifiants admin. À désactiver si Grafana est
+      # exposé au-delà du réseau interne de l'HCY.
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
+      GF_SECURITY_ALLOW_EMBEDDING: "true"
+    depends_on:
+      - prometheus-hcy
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/etc/grafana/dashboards:ro
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hcy-api
+    restart: unless-stopped
+    # Port 8080 choisi délibérément pour ne pas entrer en conflit avec le
+    # port 8000 du serveur de métriques Prometheus exposé par le moteur
+    # (core/metrics.py), qui reste un processus hôte distinct (cf. 3.4).
+    command: uvicorn api.main:app --host 0.0.0.0 --port 8080
+    ports:
+      - "8080:8080"
+    environment:
+      HCY_DB_DSN: postgresql://${HCY_DB_USER}:${HCY_DB_PASSWORD}@postgres-hcy:5432/hcy_network_db
+      HCY_JWT_SECRET: ${HCY_JWT_SECRET}
+      HCY_ADMIN_PASSWORD_HASH: ${HCY_ADMIN_PASSWORD_HASH}
+    depends_on:
+      - postgres-hcy
+
+volumes:
+  postgres_data:
+  grafana_data:

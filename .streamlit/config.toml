@@ -1,0 +1,14 @@
+[theme]
+primaryColor = "#0284C7"          # Bleu Océan / Tech DSI
+backgroundColor = "#F8FAFC"       # Gris clair moderne
+secondaryBackgroundColor = "#FFFFFF" # Blanc pur pour la sidebar et les cartes
+textColor = "#0F172A"             # Textes foncés très lisibles
+font = "sans serif"
+
+[server]
+headless = true
+enableCORS = false
+enableXsrfProtection = true
+
+[browser]
+gatherUsageStats = false

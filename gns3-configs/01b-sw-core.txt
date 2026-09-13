@@ -1,0 +1,26 @@
+sw-core — AUCUNE CONFIGURATION REQUISE
+
+Si tu utilises le nœud "Ethernet switch" natif de GNS3 (celui de la
+palette par défaut, pas un IOS Cisco) : c'est un commutateur L2 simulé
+directement par GNS3, avec autant de ports que nécessaire, et zéro
+configuration à faire. Glisse-le sur le canvas, câble-le, c'est tout.
+
+Il sert uniquement de point d'agrégation pour que coeur-reseau (2 ports)
+puisse atteindre les 3 routeurs de distribution (2 ports chacun) sans
+qu'aucun d'eux n'ait besoin d'un 3e ou 4e port physique.
+
+Si tu préfères utiliser un vrai switch Cisco IOS à la place (pour rester
+cohérent visuellement avec les autres nœuds), une configuration minimale
+suffit :
+
+    enable
+    configure terminal
+    hostname sw-core
+    interface Vlan1
+     no ip address
+     shutdown
+    end
+    write memory
+
+(Pas d'adresse IP nécessaire : ce switch ne fait que relayer au niveau 2,
+il n'est jamais la cible d'un ping ou d'une connexion SSH du moteur.)
